@@ -33,23 +33,32 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import domain.RequestState
 import domain.ToDoTask
 import presntation.screen.components.ErrorScreen
 import presntation.screen.components.LoadingScreen
 import presntation.screen.components.TaskView
+import presntation.screen.task.TaskScreen
 
 class HomeScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val viewmodel = getScreenModel<HomeViewModel>()
+        val activeTasks by viewmodel.activeTasks
+        val completeTasks by viewmodel.completeTask
+
         Scaffold(
             topBar =  {
                 CenterAlignedTopAppBar(title = { Text(text = "Home") })
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { },
+                    onClick = { navigator.push(TaskScreen()) },
                     shape = RoundedCornerShape(size = 12.dp)
                 ) {
                     Icon(
@@ -70,15 +79,17 @@ class HomeScreen : Screen {
             ) {
                 DisplayTasks(
                     modifier = Modifier.weight(1f),
-                    tasks = RequestState.Idle,
-                    onSelect = { selectTask -> },
+                    tasks = activeTasks,
+                    onSelect = { selectTask ->
+                        navigator.push(TaskScreen(selectTask))
+                    },
                     onFavorite = { task, isFavorite -> },
                     onComplete = { task, completed -> }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 DisplayTasks(
                     modifier = Modifier.weight(1f),
-                    tasks = RequestState.Idle,
+                    tasks = completeTasks,
                     showActive = false,
                     onSelect = { selectTask -> },
                     onComplete = { task, completed -> },
