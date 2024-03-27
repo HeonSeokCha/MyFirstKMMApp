@@ -37,6 +37,7 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import domain.RequestState
+import domain.TaskAction
 import domain.ToDoTask
 import presntation.screen.components.ErrorScreen
 import presntation.screen.components.LoadingScreen
@@ -83,24 +84,38 @@ class HomeScreen : Screen {
                     onSelect = { selectTask ->
                         navigator.push(TaskScreen(selectTask))
                     },
-                    onFavorite = { task, isFavorite -> },
-                    onComplete = { task, completed -> }
+                    onFavorite = { task, isFavorite ->
+                        viewmodel.setAction(
+                            action = TaskAction.SetFavorite(task, isFavorite)
+                        )
+                    },
+                    onComplete = { task, completed ->
+                        viewmodel.setAction(
+                            action = TaskAction.SetComplete(task, completed)
+                        )
+                    }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 DisplayTasks(
                     modifier = Modifier.weight(1f),
                     tasks = completeTasks,
                     showActive = false,
-                    onSelect = { selectTask -> },
-                    onComplete = { task, completed -> },
-                    onDelete = { task -> }
+                    onComplete = { task, completed ->
+                        viewmodel.setAction(
+                            action = TaskAction.SetComplete(task, completed)
+                        )
+                    },
+                    onDelete = { task ->
+                        viewmodel.setAction(
+                            action = TaskAction.Delete(task)
+                        )
+                    }
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DisplayTasks(
     modifier: Modifier = Modifier,
@@ -156,7 +171,7 @@ fun DisplayTasks(
         )
     }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier.padding(horizontal = 12.dp),
             text = if (showActive) "Active Tasks" else "Complete Tasks",
@@ -172,7 +187,7 @@ fun DisplayTasks(
                     LazyColumn(modifier = Modifier.padding(horizontal = 24.dp)) {
                         items(
                             items = it,
-                            key = { task -> task._id }
+                            key = { task -> task._id.toHexString() }
                         ) { task ->
                             TaskView(
                                 showActive = showActive,

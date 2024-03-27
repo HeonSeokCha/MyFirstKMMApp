@@ -12,8 +12,10 @@ import data.MongoDB
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import presntation.screen.components.TaskView
 import presntation.screen.home.HomeScreen
 import presntation.screen.home.HomeViewModel
+import presntation.screen.task.TaskViewModel
 
 val lightRedColor = Color(color = 0xFFF57D88)
 val darkRedColor = Color(color = 0xFF77000B)
@@ -49,6 +51,7 @@ fun App() {
 val mongoModule = module {
     single { MongoDB() }
     factory { HomeViewModel(get()) }
+    factory { TaskViewModel(get()) }
 }
 
 fun initKoin() {
